@@ -2,14 +2,13 @@ import pygame
 pygame.init()
 
 class Cultivator():
-    def __init__(self, x, y, flip, data, playerID, opp):
+    def __init__(self, x, y, flip, data, playerID):
         self.playerID = playerID
         self.connecting = True
         self.size = data[0]
         self.imageScale = data[1]
         self.imageOffset = data[2]
         self.flip = flip
-        self.opp = opp
         self.action = 0 # 0: Idle, 1: Run, 2: Jump, 3: Attack, 4: Defend, 5: Hit, 6: Death
         self.frame_index = 0
         self.image = None

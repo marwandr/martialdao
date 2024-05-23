@@ -16,9 +16,6 @@ def receive(data_queue, server):  # All data received to the queue
 
 def send(data_queue, clients, players, server):     # Handle data
     global SPRITE_DATA
-    ### Dictionaries used for anti cheating, we will compare the before and after
-    ### For each player to check for package manipulation
-    before = {}
     while True:
         while not data_queue.empty():
             # print(clients)
@@ -31,7 +28,6 @@ def send(data_queue, clients, players, server):     # Handle data
                     playerName = data.decode()[data.decode().index(":")+1:]
                     clients.append(addr)   
                     players[len(clients)-1].playerID = playerName
-                    before[addr] = players[len(clients)-1]
                     # for i in range(0, len(players)-1):
                     #     print(players[i].playerID)
                     if len(clients) > 1:
@@ -51,24 +47,7 @@ def send(data_queue, clients, players, server):     # Handle data
                                     pass
                                 else:
                                     server.sendto(data, client)
-                            ### Sending the player objects, first checking for anti-cheat
                             except:
-                                check = pickle.loads(data)
-                                sample = before[addr]
-                                ### If the difference in health is bigger than 30 there was manipulation in health
-                                if check.health - sample.health > 30 or sample.health - check.health > 30:
-                                        print(f"{sample.playerID} caught with suspicious HP manipulation!")
-                                        print(f"HP went from {sample.health} to {check.health}")
-                                        clients.remove(client)
-                                elif check.pos.x -sample.pos.x > 20 or sample.pos.x - check.pos.x > 20:
-                                        print(f"{sample.playerID} caught with suspicious x-movement manipulation!")
-                                        print(f"X position went from {sample.pos.x} to {check.pos.x}")
-                                        clients.remove(client)
-                                elif check.pos.x -sample.pos.y > 30 or sample.pos.x - check.pos.y > 30:
-                                        print(f"{sample.playerID} caught with suspicious y-movement manipulation!")
-                                        print(f"Y position went from {sample.pos.y} to {check.pos.y}")
-                                        clients.remove(client)
-                                before[addr] = sample
                                 server.sendto(data, client)
                         else:
                             try:
@@ -105,8 +84,8 @@ def start_server(serverqueue):
 
     data_queue = queue.Queue()
     clients = []
-    players = [Cultivator(200, 310, False, SPRITE_DATA, None, False), # Player 1
-                Cultivator(700, 310, True, SPRITE_DATA, None, True)] # Player 2
+    players = [Cultivator(200, 310, False, SPRITE_DATA, None), # Player 1
+                Cultivator(700, 310, True, SPRITE_DATA, None)] # Player 2
     
     server_address = '127.0.0.1'
     server_port = random.randint(8000, 9000)

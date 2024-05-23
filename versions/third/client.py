@@ -19,7 +19,6 @@ network_flag = True
     
 def get_player(ID):
     client.sendto(f"FIGHTER-{ID}".encode(), (host_address, host_port))
-    # print(f"FIGHTER-{ID}")
     data, _ = client.recvfrom(2048)
     try:
         # print(pickle.loads(data))
@@ -49,8 +48,8 @@ def send_player(player):
     # print("Received")
     try:
         # print(pickle.loads(data))
-    # if pickle.loads(data) is None:
-    #     return send_player(player)
+        if pickle.loads(data) is None:
+            return send_player(player)
         return pickle.loads(data)
     except:
         if data.decode() == "WRONG-ID":
@@ -137,13 +136,13 @@ t.join()
 
 #################--MAIN GAME--###############################################################
 
-### Colors
+# Colors
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-### Sprite variables
+# Sprite variables
 SPRITE_SIZE = 162
 SPRITE_SCALE = 4
 SPRITE_OFFSET = [72, 56]
@@ -163,7 +162,7 @@ def reset(fighter_1):
     except:
         return 1
 
-### Function for sending & receiving data thread
+# Function for sending & receiving data thread
 def networking(fighter_1):
     # global network_flag
     global fighter_2
@@ -173,35 +172,35 @@ def networking(fighter_1):
         except:
             break
 
-### Function for quitting game thread
-# def quit_game():
-#     global run
-#     global network_flag
-#     while network_flag:
-#         try:
-#             for event in pygame.event.get():
-#                 if event.type == pygame.QUIT:
-#                     print("Closing connection with server")
-#                     run = False
-#                     client.close()
-#                     pygame.quit()
-#                     exit()
-#         except:
-#             pass
+# Function for quitting game thread
+def quit_game():
+    global run
+    global network_flag
+    while network_flag:
+        try:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print("Closing connection with server")
+                    run = False
+                    client.close()
+                    pygame.quit()
+                    exit()
+        except:
+            pass
 
-### Drawing health bars
+# Drawing health bars
 def draw_health_bar(health, x, y, screen):
     ratio = health / 100
     pygame.draw.rect(screen, BLACK, (x - 2, y - 2, 404, 34))
     pygame.draw.rect(screen, RED, (x, y, 400, 30))
     pygame.draw.rect(screen, YELLOW, (x, y, 400 * ratio, 30))
 
-### Writing text
-def write_text(text, font, text_color, x, y, screen):
+# Writing text
+def writeText(text, font, text_color, x, y, screen):
         img = font.render(text, True, text_color)
         screen.blit(img, (x, y))
 
-### Load the images and return a list
+# Load the images and return a list
 def loadImages(spritesheetsrc, animationSteps):
     spritesheet = pygame.image.load(spritesheetsrc).convert_alpha()
     animationList = []
@@ -213,7 +212,7 @@ def loadImages(spritesheetsrc, animationSteps):
         animationList.append(temp_img_list)
     return animationList
 
-### Main game func
+# Main game func
 def game(opponentName):
     global name
     global receive_thread
@@ -273,8 +272,8 @@ def game(opponentName):
         animationList2 = loadImages("assets/images/dreamer/Sprites/dreamer.png", DREAMER_ANIMATION_FRAMES)
 
         ### Create thread for quitting
-        # quit_thread = threading.Thread(target=quit_game)
-        # quit_thread.start()
+        quit_thread = threading.Thread(target=quit_game)
+        quit_thread.start()
 
         ### Get fighter objects from network
         fighter_1 = get_player(name)
@@ -306,16 +305,16 @@ def game(opponentName):
                 scaled_bg = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
                 screen.blit(scaled_bg, (0,0))
 
-                if fighter_1.opp == False:
+                if fighter_1.flip == False:
                     draw_health_bar(fighter_1.health, 20, 20, screen)
                     draw_health_bar(fighter_2.health, 580, 20, screen)
-                    write_text(fighter_1.playerID + ": " + str(score[0]), score_font, RED, 20, 60, screen)
-                    write_text(fighter_2.playerID + ": " + str(score[1]), score_font, RED, 580, 60, screen)
+                    writeText(fighter_1.playerID + ": " + str(score[0]), score_font, RED, 20, 60, screen)
+                    writeText(fighter_2.playerID + ": " + str(score[1]), score_font, RED, 580, 60, screen)
                 else:
                     draw_health_bar(fighter_2.health, 20, 20, screen)
                     draw_health_bar(fighter_1.health, 580, 20, screen)
-                    write_text(fighter_2.playerID + ": " + str(score[1]), score_font, RED, 20, 60, screen)
-                    write_text(fighter_1.playerID + ": " + str(score[0]), score_font, RED, 580, 60, screen)
+                    writeText(fighter_2.playerID + ": " + str(score[0]), score_font, RED, 20, 60, screen)
+                    writeText(fighter_1.playerID + ": " + str(score[1]), score_font, RED, 580, 60, screen)
 
                 # print(f"Drawn the assets: {scaled_bg}")
 
@@ -351,7 +350,7 @@ def game(opponentName):
                     else:
                         pass 
                 if round_over == True:
-                    write_text("Victory", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
+                    writeText("Victory", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
                     if pygame.time.get_ticks() - round_over_time > ROUND_COOLDOWN:
                         # print("Resetting")
                         succesful = reset(fighter_1)
@@ -359,15 +358,10 @@ def game(opponentName):
                             print("Loading new game...")
                             round_over = False
                             run = False
-                ### Update display
+                # Update display
                 # print("Updating screen")
                 pygame.display.flip()
-                ### Quit if pygame window closed
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        new_game = False
-                        run = False
-        print("End game: Closing connection with server")
+        print("End game: Closing connection with serverc")
         network_flag = False
         client.close()
         pygame.quit()
