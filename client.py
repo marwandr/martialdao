@@ -33,6 +33,7 @@ def get_player(ID):
             client.close()
             return "error"
         elif "ACCEPTED" in data.decode():
+            # print(f"{data.decode()}")
             return get_player(ID)
         elif "RESET-SUCCESS" in data.decode():
             return get_player(ID)
@@ -43,14 +44,15 @@ def get_player(ID):
             return "error"
     
 def send_player(player):
+    # print(f"Sending player {player}")
     client.sendto(pickle.dumps(player), (host_address, host_port))
     # print("Receiving")
     data, _ = client.recvfrom(2048)
     # print("Received")
     try:
         # print(pickle.loads(data))
-    # if pickle.loads(data) is None:
-    #     return send_player(player)
+        # if pickle.loads(data) is None:
+        #     return send_player(player)
         return pickle.loads(data)
     except:
         if data.decode() == "WRONG-ID":
@@ -68,6 +70,7 @@ def receive():
             if "ACCEPTED" in data.decode():
                 # print(data.decode())
                 opponent_name = data.decode()[data.decode().index(":")+1:]
+                # print(f"{opponent_name} found opponent")
                 receive_thread = False
                 start_game = True
                 break
@@ -94,7 +97,6 @@ def receive():
                 receive_thread = False
         except:
             pass
-
 
 server_address = '127.0.0.1'
 server_port = random.randint(8000, 9000)
@@ -131,7 +133,10 @@ receive_thread = True
 t = threading.Thread(target=receive)
 t.start()
 while not start_game:
+    # if host:
     client.sendto(f"CONNECT_REQ:{name}".encode(), (host_address, host_port))
+    # else:
+    #     client.sendto(f"CONNECT_REQ1:{name}".encode(), (host_address, host_port))
 print("Opponent connected. Commencing battlefield...")
 t.join()
 
@@ -167,7 +172,7 @@ def reset(fighter_1):
 def networking(fighter_1):
     # global network_flag
     global fighter_2
-    while network_flag:
+    while True:
         try:
             fighter_2 = send_player(fighter_1)
         except:
@@ -237,7 +242,7 @@ def game(opponentName):
 
         ### Set framerate
         clock = pygame.time.Clock()
-        FPS = 60
+        FPS = 20
 
         ### Game variables
         score = [0, 0]
