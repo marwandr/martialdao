@@ -15,7 +15,6 @@ import os
 import subprocess
 import re
 import platform
-import time
 
 gc.enable()
 
@@ -59,9 +58,9 @@ def get_player(ID, client):
     client.sendto(f"FIGHTER-{ID}".encode(), (host_address, host_port))
     data, _ = client.recvfrom(2048)
     try:
-        # # print(pickle.loads(data))
-        # if pickle.loads(data) == None:
-        #     return get_player(ID, client)
+        # print(pickle.loads(data))
+        if pickle.loads(data) == None:
+            return get_player(ID, client)
         return pickle.loads(data)
     except:
         if data.decode() == "WRONG-ID":
@@ -88,8 +87,8 @@ def send_player(player, client):
     # print("Received")
     try:
         # print(pickle.loads(data))
-        # if pickle.loads(data) is None:
-        #     return send_player(player)
+        if pickle.loads(data) is None:
+            return send_player(player)
         return pickle.loads(data)
     except:
         if data.decode() == "WRONG-ID":
@@ -139,45 +138,6 @@ def menu():
     head2 = pyfiglet.figlet_format("Created by Marwan Amrhar", font="mini")
     print(head)
     print(head2)
-
-def hosting(local):
-    global host_address
-    global host_port
-    global serverqueue
-    global server_flag
-    server_flag = True
-    s = threading.Thread(target=start_server,args=(serverqueue,server_flag))
-    s.start()
-    host_address = serverqueue.get(True)
-    host_port = serverqueue.get(True)
-    print("+--------------------------------+")
-    if local is False:
-        print(f"| Server address: {host_address}      |")
-    print(f"| Server port: {host_port}              |")
-    print("+-------------------------------+")
-    print("Waiting for opponent...")
-
-def wait_for_opponent(client, local):
-    global host_address
-    global host_port
-    global name
-    global opponent_name
-    global receive_thread
-    receive_thread = True
-    t = threading.Thread(target=receive, args=(client,))
-    t.start()
-    while not start_game:
-        client.sendto(f"CONNECT_REQ:{name}".encode(), (host_address, host_port))
-    print("+-----------------------------------------------+")
-    print("| Opponent connected. Commencing battlefield... |")
-    print("+-----------------------------------------------+")
-    t.join()
-    if opponent_name == "error":
-        print("Exiting...")
-        client.close()
-    else:
-        game(opponent_name, client, local)
-        exit(0)
 
 def start(client):
     global host_address
@@ -238,9 +198,19 @@ def start(client):
             print("Please enter y or n.")
             continue
         if host:
+            server_flag = True
+            s = threading.Thread(target=start_server,args=(serverqueue,server_flag))
+            s.start()
+            host_address = serverqueue.get(True)
+            host_port = serverqueue.get(True)
             os.system("clear")
             menu()
-            hosting(local)
+            print("----------------------------------")
+            if local is False:
+                print(f"| Server address: {host_address}      |")
+            print(f"| Server port: {host_port}              |")
+            print("----------------------------------")
+            print("Waiting for opponent...")
             break
         else:
             if local is False:
@@ -256,7 +226,22 @@ def start(client):
                 print("Invalid host port...")
                 continue
             break
-    wait_for_opponent(client, local)
+
+    receive_thread = True
+    t = threading.Thread(target=receive, args=(client,))
+    t.start()
+    while not start_game:
+        client.sendto(f"CONNECT_REQ:{name}".encode(), (host_address, host_port))
+    print("------------------------------------------------")
+    print("| Opponent connected. Commencing battlefield... |")
+    print("------------------------------------------------")
+    t.join()
+    if opponent_name == "error":
+        print("Exiting...")
+        client.close()
+    else:
+        game(opponent_name, client)
+        exit(0)
 
 
 #################--MAIN GAME--###############################################################
@@ -287,31 +272,14 @@ def reset(fighter_1):
     except:
         return 1
 
-# Function for checking how long it takes to receive data
-def disconnect_time(i):
-    global received
-    global network_flag
-    time.sleep(10)
-    if received[i] is False:
-        print("Opponent has disconnected")
-        network_flag = False
-
 # Function for sending & receiving data thread
 def networking(fighter_1, client):
     # global network_flag
     global fighter_2
     global lost_conn
-    global received
-    received = []
-    i = 0
     while network_flag:
         try:
-            received.append(False)
-            disconnect_t = threading.Thread(target=disconnect_time,args=(i,))
-            disconnect_t.start()
             fighter_2 = send_player(fighter_1, client)
-            received[i] = True
-            i += 1
         except Exception as e:
             print(f"Exception in networking: {e}")
             lost_conn = True
@@ -361,7 +329,7 @@ def loadImages(spritesheetsrc, animationSteps):
     return animationList
 
 # Main game func
-def game(opponentName, client, local):
+def game(opponentName, client):
     global name
     global receive_thread
     global fighter_2
@@ -440,12 +408,11 @@ def game(opponentName, client, local):
         ### Create thread for networking
         network_thread = threading.Thread(target=networking, args=(fighter_1,client,))
         network_thread.start()
-
-        intro_count = 3
-        last_count_update = pygame.time.get_ticks() 
-
+        
         new_game = True
         while new_game:
+            intro_count = 3
+            last_count_update = pygame.time.get_ticks()
             print("Starting new game..")
             run = True
             while run:
@@ -505,10 +472,7 @@ def game(opponentName, client, local):
                     else:
                         pass 
                 if round_over == True:
-                    if fighter_1.alive == True:
-                        writeText("Victory", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
-                    else:
-                        writeText("Loss", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
+                    writeText("Victory", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
                     if pygame.time.get_ticks() - round_over_time > ROUND_COOLDOWN:
                         # print("Resetting")
                         succesful = reset(fighter_1)
@@ -516,27 +480,18 @@ def game(opponentName, client, local):
                             print("Loading new game...")
                             round_over = False
                             run = False
-                ### Update display
+                # Update display
                 # print("Updating screen")
                 pygame.display.flip()
-        if lost_conn == True:
-            print("Connection was lost, you've become the host...")
-            network_flag = False
-            pygame.quit()
-            new_game = False
-            server_flag = False
-            hosting(local)
-            wait_for_opponent(client, local)
-        else:
-            print("End game: Closing connection with server.")
-            network_flag = False
-            client.close()
-            pygame.quit()
-            new_game = False
-            server_flag = False
+        print("End game: Closing connection with server.")
+        network_flag = False
+        client.close()
+        pygame.quit()
+        new_game = False
+        server_flag = False
     except Exception as e:
         print(f"Except: Closing connection with server, {e}")
-        server_flag = False
+        server_flag = True
         network_flag = False
         client.close()
         pygame.quit()

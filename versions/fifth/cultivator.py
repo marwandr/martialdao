@@ -50,7 +50,6 @@ class Cultivator():
 
         if target.attacking == True:
             self.health -= target.damage_done
-            self.hit = True
 
         # Handle keyboard input
         if self.attacking == False and self.defending == False and self.alive == True:
@@ -140,7 +139,7 @@ class Cultivator():
                     self.hit = False
                     self.attacking = False
                     self.damage_done = 0
-                    self.attack_cooldown = 32 - self.dexterity
+                    self.attack_cooldown = 35 - self.dexterity
 
     def update_action(self, new_action):
         if new_action != self.action:

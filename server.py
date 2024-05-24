@@ -6,17 +6,17 @@ import pickle
 import gc
 import random
 
-def receive(data_queue, server):  # All data received to the queue
-    while True:
+def receive(data_queue, server, server_flag):  # All data received to the queue
+    while server_flag:
         try:
             data, addr = server.recvfrom(2048)
             data_queue.put((data, addr))
         except:
             pass
 
-def send(data_queue, clients, players, server):     # Handle data
+def send(data_queue, clients, players, server, server_flag):     # Handle data
     global SPRITE_DATA
-    while True:
+    while server_flag:
         while not data_queue.empty():
             # print(clients)
             data, addr = data_queue.get()
@@ -28,8 +28,6 @@ def send(data_queue, clients, players, server):     # Handle data
                     playerName = data.decode()[data.decode().index(":")+1:]
                     clients.append(addr)   
                     players[len(clients)-1].playerID = playerName
-                    # for i in range(0, len(players)-1):
-                    #     print(players[i].playerID)
                     if len(clients) > 1:
                         if playerName == players[0].playerID:
                             server.sendto(f"ACCEPTED:{players[1].playerID}".encode(), addr)
@@ -73,7 +71,7 @@ def send(data_queue, clients, players, server):     # Handle data
                         clients.remove(client)
                         print("Opponent disconnected")
 
-def start_server(serverqueue):
+def start_server(serverqueue, server_flag):
     global SPRITE_DATA
     gc.enable()
 
@@ -88,17 +86,23 @@ def start_server(serverqueue):
     players = [Cultivator(200, 310, False, SPRITE_DATA, None, False), # Player 1
                 Cultivator(700, 310, True, SPRITE_DATA, None, True)] # Player 2
     
-    server_address = '127.0.0.1'
-    server_port = random.randint(8000, 9000)
+    while True:
+        try:
+            server_address = '127.0.0.1'
+            server_port = random.randint(8000, 9000)
 
-    server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server.bind((server_address, server_port))
+            server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            server.bind((server_address, server_port))
+            break
+        except:
+            server_port = random.randint(8000, 9000)
+            continue
 
     serverqueue.put(server_address)
     serverqueue.put(server_port)
 
-    t1 = threading.Thread(target=receive, args=(data_queue, server,))
-    t2 = threading.Thread(target=send, args=(data_queue, clients, players, server,))
+    t1 = threading.Thread(target=receive, args=(data_queue, server,server,))
+    t2 = threading.Thread(target=send, args=(data_queue, clients, players, server,server_flag,))
 
     t1.start()
     t2.start()

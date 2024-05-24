@@ -28,8 +28,6 @@ def send(data_queue, clients, players, server):     # Handle data
                     playerName = data.decode()[data.decode().index(":")+1:]
                     clients.append(addr)   
                     players[len(clients)-1].playerID = playerName
-                    # for i in range(0, len(players)-1):
-                    #     print(players[i].playerID)
                     if len(clients) > 1:
                         if playerName == players[0].playerID:
                             server.sendto(f"ACCEPTED:{players[1].playerID}".encode(), addr)

@@ -333,7 +333,10 @@ def game(opponentName):
                     else:
                         pass 
                 if round_over == True:
-                    writeText("Victory", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
+                    if fighter_2.alive == False:
+                        writeText("Victory", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
+                    else:
+                        writeText("Loss", victory_font, RED, SCREEN_WIDTH / 3, SCREEN_HEIGHT / 5, screen)
                     if pygame.time.get_ticks() - round_over_time > ROUND_COOLDOWN:
                         succesful = reset()
                         if succesful == 0:
