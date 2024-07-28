@@ -12,7 +12,7 @@
 - [License](#license)
 
 ## Introduction
-Martial Dao is a brawler game I developed as a project for a Computer Networks course. It utilizes PyGame, pickle, and websocket libraries to create a multiplayer gaming experience over UDP.
+Martial Dao is a peer-to-peer brawler game I developed as a project for a Computer Networks course. It utilizes PyGame, pickle, and websocket libraries to create a multiplayer gaming experience over UDP.
 
 ## Features
 - Multiplayer brawler game
