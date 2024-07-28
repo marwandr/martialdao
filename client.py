@@ -49,7 +49,7 @@ def get_ip():
 
     address = ipv4.findall(output)
     if address:
-        return address[0]
+        return address[1]
     else:
         return 1
 
@@ -179,6 +179,43 @@ def wait_for_opponent(client, local):
         game(opponent_name, client, local)
         exit(0)
 
+def show_credits():
+    headers = []
+    os.system("clear")
+    head1 = pyfiglet.figlet_format("Credits", font="poison")
+    print(head1)
+    time.sleep(0.5)
+    headers.append(pyfiglet.figlet_format("Game made by", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("Marwan Amrhar", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("As a game", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("project for", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("Computer", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("Networks", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("at the VU bsc.", font="cybermedium"))
+    headers.append(pyfiglet.figlet_format("Comp Science", font="cybermedium"))
+    count = 0
+    for i in headers:
+        count += 1
+        print(i)
+        time.sleep(0.3)
+        # if count == 3:
+        #   os.system("clear")
+        #     print(head1)
+    print("[Enter] any key to continue")
+    print("OR enter 'q' to quit")
+    if input() == 'q':
+        pass
+    else:
+        os.system("clear")
+        print(head1)
+        print("Music: Filip Lackovic - Drums of the Horde")
+        print("Dreamer sprite: self-made")
+        print("Forest background by ansimuz; https://ansimuz.itch.io/parallax-forest")
+        print("Special credits to Coding with Russ for game design inspiration;")
+        print("                              https://www.youtube.com/watch?v=s5bd9KMSSW4")
+        print("[Enter] any key to continue")
+        input()
+
 def start(client):
     global host_address
     global host_port
@@ -191,15 +228,21 @@ def start(client):
     menu()
     opt1 = pyfiglet.figlet_format("[1] Local mode", font="digital")
     opt2 = pyfiglet.figlet_format("[2] Online mode", font="digital")
+    opt3 = pyfiglet.figlet_format("[3] Credits", font="digital")
     print(opt1)
     print(opt2)
+    print(opt3)
     while True:
         option = input()
-        if option != "1" and option != "2":
-            print("Please enter either 1 or 2.")
+        if option != "1" and option != "2" and option != "3":
+            print("Please enter one of the options.")
         else:
             break
-    if option == "1":
+    if option == "3":
+        show_credits()
+        start(client)
+    elif option == "1":
+        print("Entering local mode")
         local = True
         server_address = '127.0.0.1'
         server_port = random.randint(8000, 9000)
@@ -258,7 +301,6 @@ def start(client):
             break
     wait_for_opponent(client, local)
 
-
 #################--MAIN GAME--###############################################################
 
 # Colors
@@ -293,7 +335,6 @@ def disconnect_time(i):
     global network_flag
     time.sleep(10)
     if received[i] is False:
-        print("Opponent has disconnected")
         network_flag = False
 
 # Function for sending & receiving data thread
@@ -331,6 +372,7 @@ def quit_game(client):
                     run = False
                     server_flag = False
                     client.close()
+                    pygame.display.quit()
                     pygame.quit()
                     exit()
         except:
@@ -413,13 +455,13 @@ def game(opponentName, client, local):
 
         ### Frames per animations
         DREAMER_ANIMATION_FRAMES = [8, 9, 1, 7, 5, 3, 9]
-        WARRIOR_ANIMATION_FRAMES = []
+        WARRIOR_ANIMATION_FRAMES = [10, 8, 1, 7, 7, 3, 7]
 
         print("Drawing assets on the screen...")
 
         # print("Loading images for sprites")
         animationList1 = loadImages("assets/images/dreamer/Sprites/dreamer.png", DREAMER_ANIMATION_FRAMES)
-        animationList2 = loadImages("assets/images/dreamer/Sprites/dreamer.png", DREAMER_ANIMATION_FRAMES)
+        animationList2 = loadImages("assets/images/warrior/sprites/warrior.png", WARRIOR_ANIMATION_FRAMES)
 
         ### Create thread for quitting
         quit_thread = threading.Thread(target=quit_game, args=(client,))
@@ -463,8 +505,8 @@ def game(opponentName, client, local):
                 if fighter_1.opp == False:
                     draw_health_bar(fighter_1.health, 20, 20, screen)
                     draw_health_bar(fighter_2.health, 580, 20, screen)
-                    writeText(fighter_1.playerID + ": " + str(score[0]), score_font, RED, 20, 60, screen)
-                    writeText(fighter_2.playerID + ": " + str(score[1]), score_font, RED, 580, 60, screen)
+                    writeText(fighter_1.playerID + ": " + str(score[1]), score_font, RED, 20, 60, screen)
+                    writeText(fighter_2.playerID + ": " + str(score[0]), score_font, RED, 580, 60, screen)
                 else:
                     draw_health_bar(fighter_2.health, 20, 20, screen)
                     draw_health_bar(fighter_1.health, 580, 20, screen)
@@ -521,8 +563,9 @@ def game(opponentName, client, local):
                 pygame.display.flip()
         if lost_conn == True:
             print("Connection was lost, you've become the host...")
-            network_flag = False
+            pygame.display.quit()
             pygame.quit()
+            network_flag = False
             new_game = False
             server_flag = False
             hosting(local)
@@ -531,14 +574,24 @@ def game(opponentName, client, local):
             print("End game: Closing connection with server.")
             network_flag = False
             client.close()
+            pygame.display.quit()
             pygame.quit()
             new_game = False
             server_flag = False
+    except pygame.error:
+        print("End game: Closing connection with server.")
+        server_flag = False
+        network_flag = False
+        client.close()
+        pygame.display.quit()
+        pygame.quit()
+        exit(0)
     except Exception as e:
         print(f"Except: Closing connection with server, {e}")
         server_flag = False
         network_flag = False
         client.close()
+        pygame.display.quit()
         pygame.quit()
         exit(1)
 ##################################################################################################################

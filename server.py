@@ -5,6 +5,9 @@ from cultivator import Cultivator
 import pickle
 import gc
 import random
+import subprocess
+import re
+import platform
 
 def receive(data_queue, server, server_flag):  # All data received to the queue
     while server_flag:
@@ -70,6 +73,35 @@ def send(data_queue, clients, players, server, server_flag):     # Handle data
                     except:
                         clients.remove(client)
                         print("Opponent disconnected")
+
+def get_ip():
+    os_system = platform.system()
+    if os_system == "Windows":
+        command = subprocess.run(['ipconfig'], capture_output=True, text=True)
+    elif os_system == "Linux":
+        command = subprocess.run(['ip', 'addr'], capture_output=True, text=True)
+    elif os_system == "Darwin":
+        command = subprocess.run(['ifconfig'], capture_output=True, text=True)
+    else:
+        print(f"Unsupported OS: {os_system}")
+        return 1
+    
+    if command.returncode != 0:
+        print("Failed to retrieve IP address")
+        return 1
+    output = command.stdout
+    if os_system == "Windows":
+        ipv4 = re.compile(r'IPV4 Address[. ]*: (\d+\.\d+\.\d+\.\d+)')
+    elif os_system == "Linux":
+        ipv4 = re.compile(r'inet (\d+\.\d+\.\d+\.\d+)/\d+')
+    else:
+        ipv4 = re.compile(r'inet (?:addr:)?(\d+\.\d+\.\d+\.\d+)')
+
+    address = ipv4.findall(output)
+    if address:
+        return address[1]
+    else:
+        return 1
 
 def start_server(serverqueue, server_flag):
     global SPRITE_DATA
