@@ -9,6 +9,7 @@
 - [Known Issues](#known-issues)
 - [Credits](#credits)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## Introduction
 Martial Dao is a brawler game I developed as a project for a Computer Networks course. It utilizes PyGame, pickle, and websocket libraries to create a multiplayer gaming experience over UDP.
@@ -56,3 +57,6 @@ Run `server.py` to start the game server, then run `client.py` to connect as a p
 
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request.
+
+## License
+This project is licensed under the Apache-2.0 License. See the [LICENSE](LICENSE) file for details.
