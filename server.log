@@ -1,0 +1,14 @@
+2024-07-28 20:42 - DEBUG - address=['127.0.0.1', '172.21.225.195', '172.17.0.1']
+2024-07-28 20:42 - DEBUG - test
+2024-07-28 20:44 - DEBUG - ip_addresses=['127.0.0.1', '172.21.225.195', '172.17.0.1']
+2024-07-28 20:45 - DEBUG - ip_addresses=['127.0.0.1', '172.21.225.195', '172.17.0.1']
+2024-07-28 20:45 - DEBUG - ip_addresses=['127.0.0.1', '172.21.225.195', '172.17.0.1']
+2024-07-28 20:52 - DEBUG - Except: Closing connection with server, list index out of range
+2024-07-28 20:52 - DEBUG - Exception in networking: [Errno 9] Bad file descriptor
+2024-07-28 20:52 - DEBUG - Except: Closing connection with server, display Surface quit
+2024-07-28 21:32 - DEBUG - ip_addresses=['127.0.0.1', '172.21.225.195', '172.17.0.1']
+2024-07-28 21:32 - DEBUG - ip_addresses=['127.0.0.1', '172.21.225.195', '172.17.0.1']
+2024-07-28 21:33 - DEBUG - Exception in networking: [Errno 9] Bad file descriptor
+2024-07-28 21:33 - DEBUG - Except: Closing connection with server, display Surface quit
+2024-07-28 21:33 - DEBUG - Exception in networking: [Errno 9] Bad file descriptor
+2024-07-28 21:33 - DEBUG - Except: Closing connection with server, display Surface quit

@@ -5,9 +5,17 @@ from cultivator import Cultivator
 import pickle
 import gc
 import random
-import subprocess
-import re
-import platform
+import logging
+
+logging.basicConfig(
+    filename='server.log',
+    encoding='utf-8',
+    filemode='a',
+    format='{asctime} - {levelname} - {message}',
+    style='{',
+    datefmt='%Y-%m-%d %H:%M',
+    level=logging.DEBUG
+)
 
 def receive(data_queue, server, server_flag):  # All data received to the queue
     while server_flag:
@@ -74,36 +82,7 @@ def send(data_queue, clients, players, server, server_flag):     # Handle data
                         clients.remove(client)
                         print("Opponent disconnected")
 
-def get_ip():
-    os_system = platform.system()
-    if os_system == "Windows":
-        command = subprocess.run(['ipconfig'], capture_output=True, text=True)
-    elif os_system == "Linux":
-        command = subprocess.run(['ip', 'addr'], capture_output=True, text=True)
-    elif os_system == "Darwin":
-        command = subprocess.run(['ifconfig'], capture_output=True, text=True)
-    else:
-        print(f"Unsupported OS: {os_system}")
-        return 1
-    
-    if command.returncode != 0:
-        print("Failed to retrieve IP address")
-        return 1
-    output = command.stdout
-    if os_system == "Windows":
-        ipv4 = re.compile(r'IPV4 Address[. ]*: (\d+\.\d+\.\d+\.\d+)')
-    elif os_system == "Linux":
-        ipv4 = re.compile(r'inet (\d+\.\d+\.\d+\.\d+)/\d+')
-    else:
-        ipv4 = re.compile(r'inet (?:addr:)?(\d+\.\d+\.\d+\.\d+)')
-
-    address = ipv4.findall(output)
-    if address:
-        return address[1]
-    else:
-        return 1
-
-def start_server(serverqueue, server_flag):
+def start_server(serverqueue, server_flag, server_address):
     global SPRITE_DATA
     gc.enable()
 
@@ -120,7 +99,6 @@ def start_server(serverqueue, server_flag):
     
     while True:
         try:
-            server_address = '127.0.0.1'
             server_port = random.randint(8000, 9000)
 
             server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

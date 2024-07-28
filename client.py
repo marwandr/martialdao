@@ -47,9 +47,10 @@ def get_ip():
     else:
         ipv4 = re.compile(r'inet (?:addr:)?(\d+\.\d+\.\d+\.\d+)')
 
-    address = ipv4.findall(output)
-    if address:
-        return address[1]
+    ip_addresses = ipv4.findall(output)
+    logging.debug(f"{ip_addresses=}")
+    if ip_addresses:
+        return ip_addresses[1]
     else:
         return 1
 
@@ -140,19 +141,19 @@ def menu():
     print(head)
     print(head2)
 
-def hosting(local):
+def hosting(local, server_address):
     global host_address
     global host_port
     global serverqueue
     global server_flag
     server_flag = True
-    s = threading.Thread(target=start_server,args=(serverqueue,server_flag))
+    s = threading.Thread(target=start_server,args=(serverqueue,server_flag, server_address))
     s.start()
     host_address = serverqueue.get(True)
     host_port = serverqueue.get(True)
     print("+--------------------------------+")
     if local is False:
-        print(f"| Server address: {host_address}      |")
+        print(f"| Server address: {host_address}  |")
     print(f"| Server port: {host_port}              |")
     print("+-------------------------------+")
     print("Waiting for opponent...")
@@ -283,7 +284,7 @@ def start(client):
         if host:
             os.system("clear")
             menu()
-            hosting(local)
+            hosting(local, server_address)
             break
         else:
             if local is False:
@@ -339,12 +340,13 @@ def disconnect_time(i):
 
 # Function for sending & receiving data thread
 def networking(fighter_1, client):
-    # global network_flag
     global fighter_2
     global lost_conn
     global received
     received = []
     i = 0
+    
+    # Start a new thread that will disconnect the client if it takes too long to receive data
     while network_flag:
         try:
             received.append(False)
@@ -354,7 +356,7 @@ def networking(fighter_1, client):
             received[i] = True
             i += 1
         except Exception as e:
-            print(f"Exception in networking: {e}")
+            logging.debug(f"Exception in networking: {e}")
             lost_conn = True
             break
 
@@ -410,6 +412,7 @@ def game(opponentName, client, local):
     global network_flag
     global lost_conn
     global server_flag
+    
     ### Stop thread for receiving
     receive_thread = False
     try:
@@ -461,7 +464,7 @@ def game(opponentName, client, local):
 
         # print("Loading images for sprites")
         animationList1 = loadImages("assets/images/dreamer/Sprites/dreamer.png", DREAMER_ANIMATION_FRAMES)
-        animationList2 = loadImages("assets/images/warrior/sprites/warrior.png", WARRIOR_ANIMATION_FRAMES)
+        animationList2 = loadImages("assets/images/dreamer/Sprites/dreamer.png", DREAMER_ANIMATION_FRAMES)
 
         ### Create thread for quitting
         quit_thread = threading.Thread(target=quit_game, args=(client,))
@@ -578,15 +581,18 @@ def game(opponentName, client, local):
             pygame.quit()
             new_game = False
             server_flag = False
-    except pygame.error:
-        print("End game: Closing connection with server.")
+            
+    except pygame.error as e:
+        logging.debug(f"End game: Closing connection with server, {e}")
+        print(f"End game: Closing connection with server.")
         server_flag = False
         network_flag = False
         client.close()
         pygame.display.quit()
         pygame.quit()
-        exit(0)
+        exit(1)
     except Exception as e:
+        logging.debug(f"Except: Closing connection with server, {e}")
         print(f"Except: Closing connection with server, {e}")
         server_flag = False
         network_flag = False
