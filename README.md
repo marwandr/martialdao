@@ -36,24 +36,22 @@ To set up the game locally, follow these steps:
    ```bash
    pip install pygame websocket-client
 
-5. Start the server:
-   ```bash
-   python server.py
-
-7. Start the client:
-   ```bash
-   python client.py
-
 ## Usage
-Run `server.py` to start the game server, then run `client.py` to connect as a player. Use the game interface to control your character and battle against other players.
+To start playing, simply run the client. Within the client you can choose whether you want to host the server or join a game.
+   ```bash
+   python3 client.py
+```
+Use the game interface to control your character and battle against other players.
 
 ## Known Issues
 - The game currently only works locally and does not support different IP addresses, due to some bugs while retrieving the IP address.
 - Server recovery does not work properly after disconnection.
 
 ## Credits
-- Music: Credited in the code
-- Sprites: Created by the developer
+- Music: Filip Lackovic - Drums of the Horde
+- Sprites:
+     dreamer sprites created by developer
+     warrior sprites created by: https://luizmelo.itch.io/fantasy-warrior
 
 ## Contributing
 Contributions are welcome! Please fork the repository and submit a pull request.
