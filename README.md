@@ -34,7 +34,7 @@ To set up the game locally, follow these steps:
 
 3. Install the required dependencies:
    ```bash
-   pip install pygame websocket-client
+   pip install pygame websocket-client pyfiglet
 
 ## Usage
 To start playing, simply run the client. Within the client you can choose whether you want to host the server or join a game.
